@@ -1,25 +1,25 @@
-require("dotenv").config();
-const express = require("express");
-const cors = require("cors");
-const Note = require("./models/notes");
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const Note = require('./models/notes');
 
 const app = express();
 
 app.use(cors());
-app.use(express.static("build"));
+app.use(express.static('build'));
 app.use(express.json());
 
-app.get("/", (request, response) => {
-  response.send("<h1>Hello World!</h1>");
+app.get('/', (request, response) => {
+  response.send('<h1>Hello World!</h1>');
 });
 
-app.get("/api/notes", (request, response) => {
+app.get('/api/notes', (request, response) => {
   Note.find({}).then((notes) => {
     response.json(notes);
   });
 });
 
-app.get("/api/notes/:id", (request, response, next) => {
+app.get('/api/notes/:id', (request, response, next) => {
   Note.findById(request.params.id)
     .then((note) => {
       if(note) {
@@ -31,29 +31,30 @@ app.get("/api/notes/:id", (request, response, next) => {
     .catch((error) => {next(error);});
 });
 
-app.put("/api/notes/:id", (request, response) => {
+app.put('/api/notes/:id', (request, response, next) => {
   const body = request.body;
   const newNote = {
     content: body.content,
     important: body.important,
   };
-  
-  Note.findByIdAndUpdate(request.params.id, newNote, {new: true})
+
+  Note.findByIdAndUpdate(request.params.id, newNote, { new: true })
     .then((updateNote) => {
       response.json(updateNote);
     })
     .catch((error) => {next(error);});
 });
 
-app.delete("/api/notes/:id", (request, response) => {
+app.delete('/api/notes/:id', (request, response, next) => {
   Note.findByIdAndRemove(request.params.id)
     .then((result) => {
+      console.log(result);
       response.status(204).end();
     })
     .catch((error) => {next(error);});
 });
 
-app.post("/api/notes", (request, response, next) => {
+app.post('/api/notes', (request, response, next) => {
   const body = request.body;
   const note = new Note({
     content: body.content,
@@ -69,7 +70,7 @@ app.post("/api/notes", (request, response, next) => {
 });
 
 function unknownEndpoint(request, response) {
-  response.status(404).send({error: 'unknown endpoint'});
+  response.status(404).send({ error: 'unknown endpoint' });
 }
 app.use(unknownEndpoint);
 
@@ -77,9 +78,9 @@ function errorHandler(error, request, response, next) {
   console.error(error.message);
 
   if(error.name === 'CastError') {
-    return response.status(400).send({error: 'malformatted id'});
+    return response.status(400).send({ error: 'malformatted id' });
   } else if (error.name === 'ValidationError') {
-    return response.status(400).json({error: error.message});
+    return response.status(400).json({ error: error.message });
   }
 
   next(error);
