@@ -26,6 +26,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(express.static('build'));
 
 app.get('/', (request, response) => {
   response.send('<h1>Hello World!</h1>'); 
@@ -44,6 +45,30 @@ app.get('/api/notes/:id', (request, response) => {
   } else {
     response.status(404).end();
   }
+});
+
+app.put('/api/notes/:id', (request, response) => {
+  const id = Number(request.params.id);
+  const note = notes.find((note) => {return note.id === id;});
+
+  if(!note){
+    return response.status(400).json({
+      error: `note id ${id} not found.`
+    });
+  }
+
+  const body = request.body
+  const newNote = {
+    ...note,
+    content: body.content || note.content,
+    important: body.important
+  };
+  notes = notes.map((note) => {
+    return note.id === id
+      ? newNote
+      : note;
+  });
+  response.json(newNote);
 });
 
 app.delete('/api/notes/:id', (request, response) => {
